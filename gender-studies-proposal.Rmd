@@ -1,0 +1,154 @@
+---
+title: "Gender Research Proposal"
+author: "Arianna Zavala"
+date: '2023-01-09'
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+# Proposal Script
+
+
+### STEP1: Bringing data
+```{r}
+library(rio)
+lkData = "https://github.com/AriannaNKZC/UniMaGenderStudies/blob/main/data_gender_studies_fin.xlsx?raw=true"
+data=import(lkData)
+data$`Same Sex Marriage`
+```
+
+
+### STEP2: Exploring how is data distribution by making a graphic
+
+```{r}
+library(ggplot2)
+ggplot(data, aes(x = Year, fill = factor(`Same Sex Marriage`))) +
+        ylab("Number of Latin-American Countries") +
+        geom_bar(stat = "count") +
+        scale_fill_discrete(name = "Acceptance of Same Sex Marriage",
+                       labels = c("no", "yes"))
+```
+
+This indicates that there has been an increase in Latin American countries recognizing same-sex marriage in the last 12 years.
+
+
+#### Lets change one name variable to make it easier to work witk
+
+```{r}
+names(data)[3] = "sexmarriage"
+names(data)[6] = "USA"
+```
+
+
+### STEP 2: Logistic regresion
+Binominal variable
+
+#### Hypothesis one
+
+H1. The odds of a Latin-America country legalizing same-sex marriage increase when critical countries have a high index of LGBT legislation. 
+
+#### Consideration of critical countries
+
+```{r}
+set.seed(2019)
+#first model  - considering just Spain
+rlog1 <- glm(sexmarriage ~ Spain, data = data, family = 'binomial')
+
+#second model - considering just Portugal
+rlog2 <- glm(sexmarriage ~ Portugal, data = data, family = 'binomial')
+
+#third model - considering just France
+rlog3 <- glm(sexmarriage ~ France, data = data, family = 'binomial')
+
+#fourth model - considering just Germany
+rlog4 <- glm(sexmarriage ~ Germany, data = data, family = 'binomial')
+
+#fifht model = considering just USA
+rlog5 <- glm(sexmarriage ~ USA, data = data, family = 'binomial')
+
+#sixth model = considering just China
+rlog6 <- glm(sexmarriage ~ China, data = data, family = 'binomial')
+
+#seventh model = considering just Brazil
+rlog7 <- glm(sexmarriage ~ Brazil, data = data, family = 'binomial')
+
+#eight model = considering just Argentina
+rlog8 <- glm(sexmarriage ~ Argentina, data = data, family = 'binomial')
+
+#nine model - the aggrupation one
+
+rlog9 <- glm(sexmarriage ~ Spain + Portugal + France + Germany + USA + China + Brazil + Argentina, data = data, family = 'binomial')
+
+rlog91 <- glm(sexmarriage ~ Spain + Portugal + France + Germany + USA + Brazil + Argentina, data = data, family = 'binomial')
+
+```
+
+
+```{r}
+#a nicer way to see the models
+library(stargazer)
+```
+
+#### to see as group
+```{r}
+stargazer(rlog9, rlog91, type="text",report=("vc*p"))
+```
+
+
+#### to see individually 
+```{r}
+stargazer(rlog1,rlog2, rlog3, rlog4, rlog5, rlog6, rlog7, rlog8, type="text", report=("vc*p"))
+```
+
+
+#### hypothesis 2
+
+H2. The odds of a Latin-America country legalizing same-sex marriage increased when Spain and Portugal had a high index of LGBT legislation.
+
+#### Consideration of Spain and Portugal
+
+```{r}
+log1 <- glm(sexmarriage ~ Spain + Portugal, data = data, family = 'binomial')
+stargazer(rlog1,rlog2, log1, type="text", report=("vc*p"))
+```
+
+
+#### hypothesis 3
+
+
+H3. The odds of a Latin-America country legalizing same-sex marriage increased when the United States and China had a high index of LGBT legislation since they are superpowers.
+
+#### hypothesis 4
+
+
+H4. The odds of a Latin-America country legalizing same-sex marriage increased when the United States had a high index of LGBT legislation since they are superpowers.
+
+
+#### Consideration of superpowers (China & US) and US
+
+```{r}
+log2 <- glm(sexmarriage ~ USA + China, data = data, family = 'binomial')
+stargazer(rlog5,log2, type="text",report=("vc*p"))
+```
+
+
+
+#### hypothesis 5 
+
+H5. The odds of a Latin-America country legalizing same-sex marriage increased when Argentina and Brazil had a high index of LGBT legislation since they are superpowers.
+
+#### Consideration of Latinoamerican countries (Argentina and Brazil)
+
+```{r}
+log3 <- glm(sexmarriage ~ Brazil + Argentina, data = data, family = 'binomial')
+stargazer(rlog7, rlog8, log3, type="text",report=("vc*p"))
+```
+
+
+
+```{r}
+stargazer(rlog9, log1, rlog5,log2, log3, type="text",report=("vc*p"))
+```
+
